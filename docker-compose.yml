@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  app1:
+    build: ./app1
+    image: devops-project_app1:latest
+    container_name: app1
+    ports:
+      - "5000:5000"
+    depends_on:
+      - app2
+    networks:
+      - flask-net
+    environment:
+      - FLASK_ENV=development
+    # Optional dev live-reload (bind mount)
+    volumes:
+      - ./app1:/app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app2:
+    build: ./app2
+    image: devops-project_app2:latest
+    container_name: app2
+    ports:
+      - "5001:5001"
+    networks:
+      - flask-net
+    environment:
+      - FLASK_ENV=development
+    volumes:
+      - ./app2:/app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  flask-net:
+    driver: bridge
